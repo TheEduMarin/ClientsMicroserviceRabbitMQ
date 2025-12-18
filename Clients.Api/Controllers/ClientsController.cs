@@ -130,5 +130,21 @@ namespace Clients.Api.Controllers
                 return NotFound(new { error = ex.Message });
             }
         }
+        [HttpGet("search")]
+        [ProducesResponseType(typeof(IEnumerable<Client>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> Search([FromQuery] string query)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return Ok(new List<Client>());
+
+            var allClients = await _clientService.ListAsync();
+
+            var filtered = allClients
+                .Where(c => c.nit.Contains(query) ||
+                            c.first_name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                            c.last_name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            return Ok(filtered);
+        }
     }
 }
